@@ -54,14 +54,12 @@ var hot = false;
 var currentHash = "";
 
 if ($('#WebPackBanner-header').length == 0) {
-    $('body').prepend('<pre id="WebPackBanner-errors"></pre>');
+    $('body').prepend('<div id="WebPackBanner-errors"></div>');
     $('body').prepend('<div id="WebPackBanner-header">' +
         '<div id="WebPackBanner-status"></div>' +
-        '<div id="WebPackBanner-okness"></div>' +
         '</div>');
 }
 var status = $("#WebPackBanner-status");
-var okness = $("#WebPackBanner-okness");
 var $errors = $("#WebPackBanner-errors");
 var header = $("#WebPackBanner-header");
 
@@ -69,7 +67,6 @@ var header = $("#WebPackBanner-header");
 var onSocketMsg = {
     invalid: function () {
         fadeIn();
-        okness.text("");
         status.text("App updated. Recompiling...");
         header.css({
             'border-color': "#96b5b4"
@@ -82,7 +79,6 @@ var onSocketMsg = {
     },
     "still-ok": function () {
         fadeIn();
-        okness.text("");
         $errors.hide();
         status.text("App ready.");
         header.css({
@@ -92,7 +88,6 @@ var onSocketMsg = {
     },
     ok: function () {
         fadeIn();
-        okness.text("");
         $errors.hide();
 
         status.text("App hot update.");
@@ -113,17 +108,12 @@ var onSocketMsg = {
     },
     warnings: function (warnings) {
         fadeIn();
-        okness.text("Warnings while compiling.");
         $errors.hide();
         status.text("App hot update.");
     },
     errors: function (errors) {
         fadeIn();
-        var strippedErrors = errors.map(function (error) {
-            return stripAnsi(error);
-        });
-        status.text("App updated with errors. No reload!");
-        okness.text("Errors while compiling.");
+        status.text("Errors while compiling!");
         $errors.html("<span style=\"color: #" +
             colors.red +
             "\">Failed to compile.</span><br><br>" +
@@ -135,8 +125,7 @@ var onSocketMsg = {
     },
     close: function () {
         fadeIn();
-        status.text("");
-        okness.text("Disconnected.");
+        status.text("Disconnected.");
         $errors.html('<span style="color: #' + colors.yellow + ';margin-top:40px;font-size:1em;display: block">Lost' +
             ' connection to' +
             ' webpack-dev-server.<span><span style="color: #' + colors.yellow + ';margin-top:40px;font-size:1em;display: block">' +
@@ -152,7 +141,6 @@ function fadeOut() {
     fadeOutTimeout = setTimeout(function () {
         header.fadeOut();
         status.fadeOut();
-        okness.fadeOut();
     }, 3000);
 }
 
@@ -161,14 +149,12 @@ function fadeIn() {
         clearTimeout(fadeOutTimeout);
         header.stop();
         status.stop();
-        okness.stop();
         fadeOutTimeout = null;
     }
 
 
     header.show();
     status.show();
-    okness.show();
 }
 
 
