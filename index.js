@@ -4,22 +4,22 @@ var stripAnsi = require("strip-ansi");
 var ansiHTML = require("ansi-html");
 var Entities = require("html-entities").AllHtmlEntities;
 var socket = require("./socket");
-var $ = require("jquery");
+var $ = require("./web_modules/jquery");
 require("!style-loader!css-loader!./style.css");
 
 var entities = new Entities();
 
 var colors = {
-    reset : ["transparent", "transparent"],
-    black : "181818",
-    red : "E36049",
-    green : "B3CB74",
-    yellow : "FFD080",
-    blue : "7CAFC2",
-    magenta : "7FACCA",
-    cyan : "C3C2EF",
-    lightgrey : "EBE7E3",
-    darkgrey : "6D7891"
+    reset: ["transparent", "transparent"],
+    black: "181818",
+    red: "E36049",
+    green: "B3CB74",
+    yellow: "FFD080",
+    blue: "7CAFC2",
+    magenta: "7FACCA",
+    cyan: "C3C2EF",
+    lightgrey: "EBE7E3",
+    darkgrey: "6D7891"
 };
 ansiHTML.setColors(colors);
 
@@ -67,50 +67,58 @@ var header = $("#WebPackBanner-header");
 
 
 var onSocketMsg = {
-    invalid : function () {
+    invalid: function () {
+        fadeIn();
         okness.text("");
         status.text("App updated. Recompiling...");
         header.css({
-            'border-color' : "#96b5b4"
+            'border-color': "#96b5b4"
         });
         $errors.hide();
+
     },
-    hash : function (hash) {
+    hash: function (hash) {
         currentHash = hash;
     },
-    "still-ok" : function () {
+    "still-ok": function () {
+        fadeIn();
         okness.text("");
         $errors.hide();
         status.text("App ready.");
         header.css({
-            'border-color' : "#A3BE8C"
+            'border-color': "#A3BE8C"
         });
+        fadeOut();
     },
-    ok : function () {
+    ok: function () {
+        fadeIn();
         okness.text("");
         $errors.hide();
-        
+
         status.text("App hot update.");
         header.css({
-            'border-color' : "#96b5b4"
+            'border-color': "#96b5b4"
         });
         setTimeout(function () {
             status.text("App ready.");
             header.css({
-                'border-color' : "#A3BE8C"
+                'border-color': "#A3BE8C"
             });
         }, 1500);
-        
+        fadeOut();
+
     },
-    "content-changed" : function () {
+    "content-changed": function () {
         self.location.reload();
     },
-    warnings : function (warnings) {
+    warnings: function (warnings) {
+        fadeIn();
         okness.text("Warnings while compiling.");
         $errors.hide();
         status.text("App hot update.");
     },
-    errors : function (errors) {
+    errors: function (errors) {
+        fadeIn();
         var strippedErrors = errors.map(function (error) {
             return stripAnsi(error);
         });
@@ -121,11 +129,12 @@ var onSocketMsg = {
             "\">Failed to compile.</span><br><br>" +
             ansiHTML(entities.encode(errors[0])));
         header.css({
-            'border-color' : "#ebcb8b"
+            'border-color': "#ebcb8b"
         });
         $errors.show();
     },
-    close : function () {
+    close: function () {
+        fadeIn();
         status.text("");
         okness.text("Disconnected.");
         $errors.html('<span style="color: #' + colors.yellow + ';margin-top:40px;font-size:1em;display: block">Lost' +
@@ -133,11 +142,35 @@ var onSocketMsg = {
             ' webpack-dev-server.<span><span style="color: #' + colors.yellow + ';margin-top:40px;font-size:1em;display: block">' +
             'Please restart the server to reestablish connection...<span>');
         header.css({
-            'border-color' : "#ebcb8b"
+            'border-color': "#ebcb8b"
         });
         $errors.show();
     }
 };
+var fadeOutTimeout = null;
+function fadeOut() {
+    fadeOutTimeout = setTimeout(function () {
+        header.fadeOut();
+        status.fadeOut();
+        okness.fadeOut();
+    }, 3000);
+}
+
+function fadeIn() {
+    if (fadeOutTimeout != null) {
+        clearTimeout(fadeOutTimeout);
+        header.stop();
+        status.stop();
+        okness.stop();
+        fadeOutTimeout = null;
+    }
+
+
+    header.show();
+    status.show();
+    okness.show();
+}
+
 
 var hostname = urlParts.hostname;
 var protocol = urlParts.protocol;
@@ -162,11 +195,11 @@ if (hostname && (self.location.protocol === "https:" || urlParts.hostname === "0
 }
 
 var socketUrl = url.format({
-    protocol : protocol,
-    auth : urlParts.auth,
-    hostname : hostname,
-    port : (urlParts.port === "0") ? self.location.port : urlParts.port,
-    pathname : urlParts.path == null || urlParts.path === "/" ? "/sockjs-node" : urlParts.path
+    protocol: protocol,
+    auth: urlParts.auth,
+    hostname: hostname,
+    port: (urlParts.port === "0") ? self.location.port : urlParts.port,
+    pathname: urlParts.path == null || urlParts.path === "/" ? "/sockjs-node" : urlParts.path
 });
 
 

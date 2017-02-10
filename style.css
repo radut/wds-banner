@@ -10,13 +10,15 @@
     padding: 0px 10px;
     width: 1680px;
     border-left: 10px solid #A3BE8C;
+    z-index: 99999;
+    position: fixed;
 }
 
 #WebPackBanner-errors {
-    position: fixed;
+    position: absolute;
     box-sizing: border-box;
     left: 0px;
-    top: 0px;
+    top: 30px;
     right: 0px;
     bottom: 0px;
     width: 100vw;
