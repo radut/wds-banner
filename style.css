@@ -1,0 +1,38 @@
+#WebPackBanner-header {
+    background-color: #343d46;
+    color: #eff1f5;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    height: 30px;
+    line-height: 30px;
+    margin: 0px;
+    padding: 0px 10px;
+    width: 1680px;
+    border-left: 10px solid #A3BE8C;
+}
+
+#WebPackBanner-errors {
+    position: fixed;
+    box-sizing: border-box;
+    left: 0px;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    width: 100vw;
+    height: 100vh;
+    background-color: black;
+    color: rgb(232, 232, 232);
+    font-family: Menlo, Consolas, monospace;
+    font-size: large;
+    padding: 2rem;
+    line-height: 1.2;
+    white-space: pre-wrap;
+    overflow: auto;
+    z-index: 9999999;
+    display: none;
+}
+
+#WebPackBanner-okness {
+    font-weight: bold;
+}
