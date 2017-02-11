@@ -4,6 +4,12 @@ Mimics the behaviour of the WDS banner from live bundle from http://app/webpack-
 
 This is for development usage only.
 
+This project is inspired from :
+
+https://github.com/webpack/webpack-dev-server - overlay,banner
+https://github.com/glenjamin/webpack-hot-middleware
+https://www.npmjs.com/package/redbox-react
+
 ##### You will get error overlay, and informations about when the page is ready/hot updated
 
 
