@@ -13,16 +13,16 @@ https://www.npmjs.com/package/redbox-react
 ##### You will get error overlay, and informations about when the page is ready/hot updated
 
 
+![alt tag](https://raw.githubusercontent.com/radut/wds-banner/master/example.gif)
+
+
 #### Usage
 
 Within the entry points of webpack add the following :
 
 
     require.resolve('wds-banner') + '?' + webpackDevServerPublicPath, // my banner+error overlay
-    
-    or 
-
-
+    //or 
     'wds-banner' + '?' + webpackDevServerPublicPath, // my banner+error overlay
 
 
@@ -35,7 +35,4 @@ WDS banner can be used with WDS setup for HMR and React hot update
     require.resolve('webpack/hot/dev-server'),
     require.resolve('wds-banner') + '?' + config.devServerPublicPath, // my banner+error overlay
 
-
-
-![alt tag](https://raw.githubusercontent.com/radut/wds-banner/master/example.gif)
 
