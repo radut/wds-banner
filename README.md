@@ -31,5 +31,5 @@ WDS banner can be used with WDS setup for HMR and React hot update
 
 
 
-![alt tag](https://raw.githubusercontent.com/radut/master/example.gif)
+![alt tag](https://raw.githubusercontent.com/radut/wds-banner/master/example.gif)
 
