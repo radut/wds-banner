@@ -1,4 +1,11 @@
-#WebPackBanner-header {
+#WDS-Banner-Container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 16777271;
+}
+
+#WDS-header {
     background-color: #343d46;
     color: #eff1f5;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -10,11 +17,12 @@
     padding: 0px 10px;
     width: 1680px;
     border-left: 10px solid #A3BE8C;
-    z-index: 99999;
-    position: fixed;
+    position: absolute;
+    z-index: 16777271;
+    /*max z index value for safari*/
 }
 
-#WebPackBanner-errors {
+#WDS-errors {
     position: absolute;
     box-sizing: border-box;
     left: 0px;
@@ -31,6 +39,7 @@
     line-height: 1.2;
     white-space: pre-wrap;
     overflow: auto;
-    z-index: 9999999;
     display: none;
+    z-index: 16777271;
+    /*max z index value for safari*/
 }
