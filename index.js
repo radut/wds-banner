@@ -96,7 +96,7 @@ var onSocketMsg = {
         fadeIn();
         $errors.hide();
 
-        status.text("App hot update.");
+        status.text("App hot updated.");
         header.css({
             'border-color' : "#96b5b4"
         });
