@@ -19,7 +19,6 @@
     width: 100vw;
     border-left: 10px solid #A3BE8C;
     position: absolute;
-    width: 100%;
     z-index: 16777271;
     /*max z index value for safari*/
 }
