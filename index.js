@@ -4,7 +4,8 @@ var stripAnsi = require("strip-ansi");
 var ansiHTML = require("ansi-html");
 var Entities = require("html-entities").AllHtmlEntities;
 var socket = require("./socket");
-var $ = require("./web_modules/jquery");
+var $ = require("./web_modules/zepto");
+// var $ = require("./web_modules/jquery");
 require("!style-loader!css-loader!./style.css");
 
 var entities = new Entities();
