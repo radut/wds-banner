@@ -16,7 +16,7 @@
     line-height: 30px;
     margin: 0px;
     padding: 0px 10px;
-    width: 1680px;
+    width: 100vw;
     border-left: 10px solid #A3BE8C;
     position: absolute;
     width: 100%;
@@ -31,7 +31,7 @@
     top: 30px;
     right: 0px;
     bottom: 0px;
-    width: 100%;
+    width: 100vw;
     height: 100vh;
     background-color: black;
     color: rgb(232, 232, 232);
