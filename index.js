@@ -5,6 +5,7 @@ var ansiHTML = require("ansi-html");
 var Entities = require("html-entities").AllHtmlEntities;
 var socket = require("./socket");
 var $ = require("./web_modules/zepto");
+// var $ = require("zepto");
 // var $ = require("./web_modules/jquery");
 require("!style-loader!css-loader!./style.css");
 
@@ -148,16 +149,16 @@ var onSocketMsg = {
 var fadeOutTimeout = null;
 function fadeOut(){
     fadeOutTimeout = setTimeout(function (){
-        header.fadeOut();
-        status.fadeOut();
+        header.hide();
+        status.hide();
     }, 3000);
 }
 
 function fadeIn(){
     if (fadeOutTimeout != null){
         clearTimeout(fadeOutTimeout);
-        header.stop();
-        status.stop();
+        // header.stop();
+        // status.stop();
         fadeOutTimeout = null;
     }
 
