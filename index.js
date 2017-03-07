@@ -69,7 +69,7 @@ var status = $("#WDS-status");
 var $errors = $("#WDS-errors");
 var header = $("#WDS-header");
 
-
+//log-level,hot,hash
 var onSocketMsg = {
     invalid : function (){
         fadeIn();
