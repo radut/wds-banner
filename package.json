@@ -22,7 +22,7 @@
     "url": "https://github.com/radut/wds-banner/issues"
   },
   "homepage": "https://github.com/radut/wds-banner#readme",
-  "devDependencies": {
+  "dependencies": {
     "ansi-html": "0.0.7",
     "css-loader": "^0.26.1",
     "html-entities": "^1.2.0",
