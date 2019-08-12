@@ -16,7 +16,7 @@
     line-height: 30px;
     margin: 0px;
     padding: 0px 10px;
-    width: 100vw;
+    min-width: 160px;
     border-left: 15px solid;
     position: absolute;
     z-index: 16777271;
