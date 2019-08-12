@@ -1,6 +1,6 @@
 {
   "name": "wds-banner",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "WebPack Dev Server Banner inline + error overlay",
   "main": "index.js",
   "scripts": {
