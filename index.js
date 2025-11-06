@@ -1,15 +1,10 @@
 /* global __resourceQuery */
 var url = require("url");
-var stripAnsi = require("strip-ansi");
 var ansiHTML = require("ansi-html");
-var Entities = require("html-entities").AllHtmlEntities;
+var { encode } = require("html-entities");
 var socket = require("./socket");
 var $ = require("./web_modules/zepto");
-// var $ = require("zepto");
-// var $ = require("./web_modules/jquery");
 require("!style-loader!css-loader!./style.css");
-
-var entities = new Entities();
 
 var colors = {
     reset: ["transparent", "transparent"],
@@ -60,7 +55,6 @@ if (typeof __resourceQuery === "string" && __resourceQuery){
 }
 
 
-var hot = false;
 var appLoaded = false;
 
 if ($('#WDS-Banner-Container').length == 0){
@@ -79,8 +73,6 @@ var header = $("#WDS-header");
 
 header.hide();
 status.hide();
-
-//log-level,hot,hash
 
 function appHotUpdated(){
     status.text("App hot updated.");
@@ -109,10 +101,6 @@ var onSocketMsg = {
         fadeIn();
         appCompiling();
         $errors.hide();
-    },
-    hash: function (hash){
-        currentHash = hash;
-
     },
     "still-ok": function (){
         fadeIn();
@@ -155,7 +143,7 @@ var onSocketMsg = {
         $errors.html("<span style=\"color: #" +
                 colors.red +
                 "\">Failed to compile.</span><br><br>" +
-                ansiHTML(entities.encode(errors[0])));
+                ansiHTML(encode(errors[0])));
         header.css({
             'border-color': borderColors.error
         });
@@ -187,8 +175,6 @@ function fadeOut(time){
 function fadeIn(){
     if (fadeOutTimeout != null){
         clearTimeout(fadeOutTimeout);
-        // header.stop();
-        // status.stop();
         fadeOutTimeout = null;
     }
 
@@ -219,13 +205,17 @@ if (hostname && (self.location.protocol === "https:" || urlParts.hostname === "0
     protocol = self.location.protocol;
 }
 
+// Convert http/https protocol to ws/wss for WebSocket
+var wsProtocol = protocol === "https:" ? "wss:" : "ws:";
+
 var socketUrl = url.format({
-    protocol: hostname === '' ? '' : protocol,
+    protocol: hostname === '' ? '' : wsProtocol,
     auth: urlParts.auth,
     hostname: hostname,
     port: (urlParts.port === "0") ? self.location.port : urlParts.port,
-    pathname: urlParts.path == null || urlParts.path === "/" ? "/sockjs-node" : urlParts.path
+    pathname: urlParts.path == null || urlParts.path === "/" ? "/ws" : urlParts.path
 });
+
 
 
 socket(socketUrl, onSocketMsg);
