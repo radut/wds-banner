@@ -1,9 +1,9 @@
-/* global __resourceQuery */
-var url = require("url");
 var ansiHTML = require("ansi-html");
 var { encode } = require("html-entities");
-var socket = require("./socket");
 var $ = require("./web_modules/zepto");
+var log = require("./log");
+var connect = require("./socket");
+var resolveSocketUrl = require("./socketUrl");
 require("!style-loader!css-loader!./style.css");
 
 var colors = {
@@ -21,204 +21,147 @@ var colors = {
 ansiHTML.setColors(colors);
 
 var borderColors = {
-    error: '#C9302C',
-    warn: '#EC971F',
-    ok: '#60be56',
-    compiling: '#286090',
-    updated: '#31B0D5'
+    error: "#C9302C",
+    warn: "#EC971F",
+    ok: "#60be56",
+    compiling: "#286090",
+    updated: "#31B0D5"
 };
 
-function getCurrentScriptSource(){
-    // `document.currentScript` is the most accurate way to find the current script,
-    // but is not supported in all browsers.
-    if (document.currentScript)
-        return document.currentScript.getAttribute("src");
-    // Fall back to getting all scripts in the document.
-    var scriptElements = document.scripts || [];
-    var currentScript = scriptElements[scriptElements.length - 1];
-    if (currentScript)
-        return currentScript.getAttribute("src");
-    // Fail as there was no script to use.
-    throw new Error("[WDS-Banner] Failed to get current script source");
+// The dev server may send several `ok` messages right after connecting;
+// those still count as the initial load rather than a hot update.
+var STARTUP_WINDOW_MS = 1500;
+var firstOkAt = null;
+
+function isStartingUp(){
+    return firstOkAt === null || Date.now() - firstOkAt < STARTUP_WINDOW_MS;
 }
 
-
-var urlParts;
-if (typeof __resourceQuery === "string" && __resourceQuery){
-    // If this bundle is inlined, use the resource query to get the correct url.
-    urlParts = url.parse(__resourceQuery.substr(1));
-} else {
-    // Else, get the url from the <script> this file was called with.
-    var scriptHost = getCurrentScriptSource();
-    scriptHost = scriptHost.replace(/\/[^\/]+$/, "");
-    urlParts = url.parse((scriptHost ? scriptHost : "/"), false, true);
+if ($("#WDS-Banner-Container").length === 0){
+    $("body").prepend(
+            '<div id="WDS-Banner-Container">' +
+            '<div id="WDS-header"><div id="WDS-status"></div></div>' +
+            '<div id="WDS-errors"></div>' +
+            "</div>"
+    );
 }
 
-
-var appLoaded = false;
-
-if ($('#WDS-Banner-Container').length == 0){
-    $('body').prepend('<div id="WDS-Banner-Container"/>');
-    $('#WDS-Banner-Container')//
-            .html('<div id="WDS-header">' +
-                    '<div id="WDS-status"/>' +
-                    '</div>' +
-                    '<div id="WDS-errors"/>'
-            );
-}
-
-var status = $("#WDS-status");
+var $header = $("#WDS-header").hide();
+var $status = $("#WDS-status").hide();
 var $errors = $("#WDS-errors");
-var header = $("#WDS-header");
 
-header.hide();
-status.hide();
+var hideTimer = null;
+var statusTimer = null;
 
-function appHotUpdated(){
-    status.text("App hot updated.");
-    header.css({
-        'border-color': borderColors.updated
-    });
-
+function setStatus(text, borderColor){
+    $status.text(text);
+    $header.css({ "border-color": borderColor });
 }
 
-function appReady(){
-    status.text("App ready.");
-    header.css({
-        'border-color': borderColors.ok
-    });
+function showBanner(text, borderColor){
+    clearTimeout(hideTimer);
+    clearTimeout(statusTimer);
+    setStatus(text, borderColor);
+    $header.show();
+    $status.show();
 }
 
-function appCompiling(){
-    status.text("Recompiling...");
-    header.css({
-        'border-color': borderColors.compiling
-    });
+function setStatusAfter(text, borderColor, delayMs){
+    statusTimer = setTimeout(function (){
+        setStatus(text, borderColor);
+    }, delayMs);
 }
 
-var onSocketMsg = {
+function hideBannerAfter(delayMs){
+    hideTimer = setTimeout(function (){
+        $header.hide();
+        $status.hide();
+    }, delayMs);
+}
+
+function toHtml(text){
+    return ansiHTML(encode(text));
+}
+
+// webpack-dev-server 3 sends errors as strings, 4+ sends stats error objects.
+function formatError(error){
+    if (typeof error === "string"){
+        return error;
+    }
+    var location = [error.moduleName, error.loc].filter(Boolean).join(" ");
+    var header = location ? "ERROR in " + location + "\n" : "";
+    return header + (error.message || "");
+}
+
+function renderErrors(errors){
+    var body = errors.map(formatError).map(toHtml).join("\n\n");
+    return '<span style="color: #' + colors.red + '">Failed to compile.</span>\n\n' + body;
+}
+
+function renderDisconnected(){
+    return '<span style="color: #' + colors.yellow + '">' +
+            "Lost connection to webpack-dev-server.\n\n" +
+            "Please restart the server to reestablish connection..." +
+            "</span>";
+}
+
+function reloadPage(){
+    log.info("Content changed, reloading page");
+    window.location.reload();
+}
+
+var handlers = {
     invalid: function (){
-        fadeIn();
-        appCompiling();
+        log.info("Recompiling");
         $errors.hide();
+        showBanner("Recompiling...", borderColors.compiling);
     },
     "still-ok": function (){
-        fadeIn();
         $errors.hide();
-        appReady();
-        fadeOut(3000);
+        showBanner("App ready.", borderColors.ok);
+        hideBannerAfter(3000);
     },
     ok: function (){
-        if (appLoaded === true){
-            fadeIn();
-            $errors.hide();
-            appHotUpdated();
-            setTimeout(function (){
-                appReady()
-            }, 1000);
-            fadeOut(2500);
-        } else {
-            fadeIn();
-            appReady();
-            setTimeout(function (){
-                appLoaded = true;
-            }, 1500);
-            fadeOut(1500);
-        }
-    },
-    "content-changed": function (){
-        self.location.reload();
-    },
-    warnings: function (warnings){
-        fadeIn();
         $errors.hide();
-        status.text("App hot updated with warnings.");
-        header.css({
-            'border-color': borderColors.warn
-        });
+        if (isStartingUp()){
+            if (firstOkAt === null){
+                firstOkAt = Date.now();
+            }
+            log.info("App ready");
+            showBanner("App ready.", borderColors.ok);
+            hideBannerAfter(1500);
+            return;
+        }
+        log.info("App hot updated");
+        showBanner("App hot updated.", borderColors.updated);
+        setStatusAfter("App ready.", borderColors.ok, 1000);
+        hideBannerAfter(2500);
+    },
+    "content-changed": reloadPage,
+    "static-changed": reloadPage,
+    warnings: function (warnings){
+        log.warn("Compiled with " + warnings.length + " warning(s)");
+        $errors.hide();
+        showBanner("App hot updated with warnings.", borderColors.warn);
     },
     errors: function (errors){
-        fadeIn();
-        status.text("Errors while compiling!");
-        $errors.html("<span style=\"color: #" +
-                colors.red +
-                "\">Failed to compile.</span><br><br>" +
-                ansiHTML(encode(errors[0])));
-        header.css({
-            'border-color': borderColors.error
-        });
-        $errors.show();
+        log.error("Failed to compile with " + errors.length + " error(s)");
+        showBanner("Errors while compiling!", borderColors.error);
+        $errors.html(renderErrors(errors)).show();
     },
     close: function (){
-        fadeIn();
-        status.text("Disconnected.");
-        $errors.html('<span style="color: #' + colors.yellow + ';margin-top:40px;font-size:1em;display: block">Lost' +
-                ' connection to' +
-                ' webpack-dev-server.<span><span style="color: #' + colors.yellow + ';margin-top:40px;font-size:1em;display: block">' +
-                'Please restart the server to reestablish connection...<span>');
-        header.css({
-            'border-color': borderColors.warn
-        });
-        $errors.show();
+        showBanner("Disconnected.", borderColors.warn);
+        $errors.html(renderDisconnected()).show();
     }
 };
 
-var fadeOutTimeout = null;
-
-function fadeOut(time){
-    fadeOutTimeout = setTimeout(function (){
-        header.hide();
-        status.hide();
-    }, time);
+var socketUrl;
+try {
+    socketUrl = resolveSocketUrl();
+} catch (error){
+    log.error("Banner disabled: " + error.message);
 }
 
-function fadeIn(){
-    if (fadeOutTimeout != null){
-        clearTimeout(fadeOutTimeout);
-        fadeOutTimeout = null;
-    }
-
-    header.show();
-    status.show();
+if (socketUrl){
+    connect(socketUrl, handlers);
 }
-
-
-var hostname = urlParts.hostname;
-var protocol = urlParts.protocol;
-
-
-//check ipv4 and ipv6 `all hostname`
-if (hostname === "0.0.0.0" || hostname === "::"){
-    // why do we need this check?
-    // hostname n/a for file protocol (example, when using electron, ionic)
-    // see: https://github.com/webpack/webpack-dev-server/pull/384
-    if (self.location.hostname && !!~self.location.protocol.indexOf("http")){
-        hostname = self.location.hostname;
-    }
-}
-
-// `hostname` can be empty when the script path is relative. In that case, specifying
-// a protocol would result in an invalid URL.
-// When https is used in the app, secure websockets are always necessary
-// because the browser doesn't accept non-secure websockets.
-if (hostname && (self.location.protocol === "https:" || urlParts.hostname === "0.0.0.0")){
-    protocol = self.location.protocol;
-}
-
-// Convert http/https protocol to ws/wss for WebSocket
-var wsProtocol = protocol === "https:" ? "wss:" : "ws:";
-
-var socketUrl = url.format({
-    protocol: hostname === '' ? '' : wsProtocol,
-    auth: urlParts.auth,
-    hostname: hostname,
-    port: (urlParts.port === "0") ? self.location.port : urlParts.port,
-    pathname: urlParts.path == null || urlParts.path === "/" ? "/ws" : urlParts.path
-});
-
-
-
-socket(socketUrl, onSocketMsg);
-
-
-

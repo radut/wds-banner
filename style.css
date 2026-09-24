@@ -3,44 +3,38 @@
     top: 0;
     left: 0;
     right: 0;
-    z-index: 16777271;
+    z-index: 16777271; /* max z-index value for safari */
 }
 
 #WDS-header {
+    position: absolute;
+    min-width: 160px;
+    height: 30px;
+    line-height: 30px;
+    margin: 0;
+    padding: 0 10px;
+    border-left: 15px solid;
     background-color: #343d46;
     color: #eff1f5;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 12px;
     font-weight: 400;
-    height: 30px;
-    line-height: 30px;
-    margin: 0px;
-    padding: 0px 10px;
-    min-width: 160px;
-    border-left: 15px solid;
-    position: absolute;
-    z-index: 16777271;
-    /*max z index value for safari*/
 }
 
 #WDS-errors {
     position: absolute;
     box-sizing: border-box;
-    left: 0px;
     top: 30px;
-    right: 0px;
-    bottom: 0px;
+    left: 0;
     width: 100vw;
-    height: 100vh;
+    height: calc(100vh - 30px);
+    padding: 2rem;
+    overflow: auto;
+    display: none;
     background-color: black;
     color: rgb(232, 232, 232);
     font-family: Menlo, Consolas, monospace;
     font-size: large;
-    padding: 2rem;
     line-height: 1.2;
     white-space: pre-wrap;
-    overflow: auto;
-    display: none;
-    z-index: 16777271;
-    /*max z index value for safari*/
 }
