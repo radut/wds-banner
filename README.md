@@ -29,6 +29,10 @@ Within the entry points of webpack add the following :
 
 where webpackDevServerPublicPath is the public path defined for WDS usually /
 
+With webpack-dev-server 4/5 the banner connects to the `/ws` endpoint of that address. Pass a different path in the query (`'wds-banner?http://localhost:8080/custom-ws'`) if the server uses a custom `client.webSocketURL.pathname`.
+
+Everything the banner does is logged to the browser console with the `[WDS Banner]` prefix: connection attempts, reconnects, recompiles and compile results.
+
 WDS banner can be used with WDS setup for HMR and React hot update 
 
     require.resolve('webpack-dev-server/client') + '?' + config.devServerPublicPath,
